@@ -8,9 +8,9 @@ title: About
 # MIT License
 ---
 
-Hi guys i'm softwareuser from india i'm cybersecurity enthusiast and new bie Programmer (Java). I always love to learn New things. Hope my blogs will help others :). If you have any queries Kindly Message on [Twitter](https://twitter.com/softwareuser_).
+Hi, guys, I'm software user from India I'm cybersecurity enthusiast and newbie Programmer (Java). I always love to learn new things. Hope my blogs will help others :). If you have any queries Kindly Message on [Twitter](https://twitter.com/softwareuser_).
 
-<script src="https://www.hackthebox.eu/badge/123340"></script>
+<script src="https://www.hackthebox.eu/badge/182165"></script>
 
 
 

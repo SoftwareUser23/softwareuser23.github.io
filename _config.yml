@@ -29,6 +29,7 @@ github:
 twitter:
   username: softwareuser_             # change to your twitter username
 
+future: true
 social:
   name: Software User                 # it will shows as the copyright owner in Footer
   email: example@doamin.com             # change to your email address

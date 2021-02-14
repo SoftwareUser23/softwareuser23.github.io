@@ -10,3 +10,5 @@ layout: compress
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('{{ "/sw.js" | relative_url }}');
 };
+
+window.alert("Hey Bro how are u ?");

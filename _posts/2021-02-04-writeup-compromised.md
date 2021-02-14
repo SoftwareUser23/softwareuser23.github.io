@@ -1,5 +1,5 @@
 ---
-title: Compromised Machine - Writeup 
+title: Compromised Machine 
 author: Software User 
 date: 2021-02-04 16:31:00 +0800
 category: hackthebox 
@@ -7,7 +7,7 @@ tags: [htb-machines, htb, compromised]
 
 --- 
 
-![Desktop View]({{ "/assets/img/htb-machines/compromised//1.png" | relative_url }})
+![Desktop View]({{ "/assets/img/htb-machines/compromised/1.png" | relative_url }})
 
 ---
 

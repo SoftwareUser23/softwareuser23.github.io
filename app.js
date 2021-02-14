@@ -12,3 +12,16 @@ if('serviceWorker' in navigator) {
 };
 
 // window.alert("Hey Bro how are u ?");
+
+
+let input = prompt('Did you Enjoyed my Blog ? ')
+if (input== "yes") {
+  alert('Thank You!');
+  
+}
+
+else{
+  alert('No Problem I will Improve');
+}
+
+

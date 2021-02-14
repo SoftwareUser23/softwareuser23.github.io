@@ -1,1 +1,1 @@
-/* Registering Service Worker */ if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }; window.alert("Hey Bro how are u ?");
+/* Registering Service Worker */ if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }; // window.alert("Hey Bro how are u ?"); let input = prompt('Did you Enjoyed my Blog ? ') if (input== "yes") { alert('Thank You!'); } else{ alert('No Problem I will Improve'); }

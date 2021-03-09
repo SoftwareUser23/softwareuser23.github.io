@@ -14,7 +14,7 @@ tags: [htb-machines,htb,doctor,ssti,htb]
 
 
 
-Doctor is easy level machine released on 26 September2020 on HacTheBox and created by [egotisticalSW](https://www.hackthebox.eu/home/users/profile/94858)
+Doctor is easy level machine released on 26 September 2020 on HacTheBox and created by [egotisticalSW](https://www.hackthebox.eu/home/users/profile/94858)
 
 <span style="color:#06bf04">The blog is for educational purposes only.</span>
 
@@ -27,7 +27,7 @@ Doctor is easy level machine released on 26 September2020 on HacTheBox and creat
 
 As always, I added IP In hosts file.
 
-Lets start with Port Scanning
+Let's start with Port Scanning
 ---
 # Nmap 
 
@@ -44,8 +44,7 @@ Lets start with Port Scanning
 
 ---
 
-<strong>lnmap is just my alias to print only open ports from result file
-</strong>
+<strong>lnmap is just my alias to print only open ports from the result file</strong>
 
 ```markdown
 
@@ -56,11 +55,11 @@ Lets start with Port Scanning
 
 # Web Page
  
-A simple web page and links aren't working
+A simple web page and links aren’t working
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/3.png" | relative_url }})
 
-but we got a subdomain 
+but we got a subdomain
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/4.png " | relative_url }})
 
@@ -83,11 +82,11 @@ Let's register
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/6.png" | relative_url }})
 
-Let's Login with email and password that we used to register
+Let’s Login with the email and password that we used to register
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/7.png" | relative_url }})
 
-Nothing it's blank lets source-code and i found something linked with /archive
+Nothing it's blank lets source-code and I found something linked with /archive
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/8.png" | relative_url }})
 
@@ -100,17 +99,17 @@ Let's check /archive
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/9.png"  | relative_url }})
 
-/archive is also blank page
+the /archive is also a blank pag/
 
-but on webpage  we can see  a option of New Message 
+but on the webpage, we can see an option of New Message 
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/10.png" | relative_url }})
 
-Let's Try to post a message with `<h1>` tag 
+Let's try to post a message with `<h1>` tag 
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/11.png" | relative_url }})
 
-and we get a response your post has been created
+and we got a response that your post has been created
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/12.png" | relative_url }})
 
@@ -118,7 +117,7 @@ we can try to check it on /archive
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/13.png" | relative_url }})
 
-as we can see our message is there  and on this point i was sure that i have to work bit more and i can execute command or payload at /archive lets try some other tags too
+as we can see our message is there  and at this point, I was sure that I have to work a bit more and I can execute command or payload at /archive lets try some other tags too
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/14.png" | relative_url }})
 
@@ -143,12 +142,12 @@ source code
 
 it's vunlreable by SSTI(Server-Side Template Injection) Server-side template injection is when an attacker is able to use native template syntax to inject a malicious payload into a template, which is then executed server-side. Read More about [SSTI](https://portswigger.net/web-security/server-side-template-injection)
 
-we have to identify which template is web page using so  a picture from this [article](https://portswigger.net/research/server-side-template-injection) explains everything easily 
+we have to identify which template is a web page using so, a picture from this [article](https://portswigger.net/research/server-side-template-injection) explains everything easily 
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/18.png" | relative_url }})
 
-so i started trying every payload to find out which template is web app using 
-and finally i found thats Jinja2 with this payload ` curly bracket curly bracket 5*apostrophe5apostrophe  curly bracket curly bracket ` for more about check this [jinja2](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Template%20Injection) let's try other payload to confirm that is jinja2 hehe
+so I started trying every payload to find out which template is web app using 
+and finally, I found that's Jinja2 with this payload ` curly bracket curly bracket 5*apostrophe5apostrophe  curly bracket curly bracket ` for more about check this [jinja2](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Template%20Injection) let's try another payload to confirm that this is jinja2 hehe
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/19.png" | relative_url }})
 
@@ -156,7 +155,7 @@ let's check /archive again
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/20.png" | relative_url }})
 
-thats working now i have to Exploit the SSTI by calling Popen without guessing the offset
+That's working now. I have to Exploit the SSTI by calling Popen without guessing the offset
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/21.png" | relative_url }})
 
@@ -178,7 +177,7 @@ now let's access the /archive we got a shell as web@doctor
 
 # Web (Shell)
 
-we don't have permission to read user.txt we have tp enumerate more after some time i found some log files but there is an backup so i found creds in that file of probably user shaun because shaun contains our user.txt 
+we don't have permission to read user.txt we have to enumerate more after some time I found some log files but there is a backup so I found creds in that file of probably user shaun because shaun contains our user.txt 
 
 ```markdown
 cat backup | grep -iE "password" 
@@ -194,7 +193,9 @@ got user
 
 # Root Part 
 
-As always i will run [linPEAS](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS) after running linPEAS i found splunk is running
+As always I will run [linPEAS](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS)  	After running linPEAS. I found that Splunk is running
+
+
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/27.png" | relative_url }})
 <!-- ![Desktop View]({{ "/assets/img/htb-machines/doctor/27.png" | relative_url }}) -->
@@ -203,12 +204,12 @@ Splunk forwarder is one of the components of splunk infrastructure. Splunk forwa
 
 ![Desktop View]({{ "/assets/img/htb-machines/doctor/splunk-py.png"}})
 
-After googling i found an script which can be used here for privilege escalation [PySplunkWhisperer2](https://github.com/DaniloCaruso/SplunkWhisperer2/tree/master/PySplunkWhisperer2)
+After some googling. I found a script that can be used here for privilege escalation [PySplunkWhisperer2](https://github.com/DaniloCaruso/SplunkWhisperer2/tree/master/PySplunkWhisperer2)
 
 # PySplunkWhisperer2
 --- 
 
-we have to start a netcat listener and then we have to run PySplunkWhisperer2 on our system
+We have to start a Netcat listener. And then we have to run PySplunkWhisperer2 on our system
 
 ```
 

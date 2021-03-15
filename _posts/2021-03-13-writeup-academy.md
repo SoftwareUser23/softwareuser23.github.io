@@ -199,7 +199,7 @@ So, i got a password for user `mrb3n`
 
 so mrb3n is allowed to run sudo 
 
-![Desktop View]({{ "/assets/img/htb-machines/compromised/22.png" | relative_url }})
+![Desktop View]({{ "/assets/img/htb-machines/academy/22.png" | relative_url }})
 composer Privilege escalation
 
 

@@ -170,9 +170,9 @@ I need to enumerate now and after enumerating some directories I found a passwor
 
 password `mySup3rP4s5w0rd!!` 
 
-these four users has shell 
+<!-- these four users has shell  -->
 
-![Desktop View]({{ "/assets/img/htb-machines/academy/17.png" | relative_url }})
+<!-- ![Desktop View]({{ "/assets/img/htb-machines/academy/17.png" | relative_url }}) -->
 
 # cry0l1t3  shell 
 
@@ -201,7 +201,6 @@ so mrb3n is allowed to run sudo
 
 ![Desktop View]({{ "/assets/img/htb-machines/academy/22.png" | relative_url }})
 composer Privilege escalation
-
 
 # Root 
 

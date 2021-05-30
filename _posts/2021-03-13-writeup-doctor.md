@@ -1,5 +1,5 @@
 --- 
-titile: Doctor Machine 
+titile: Doctor HackTheBox Writeup 
 author: Software User
 date: 2021-02-13 16:31:00 +0800
 category: hackthebox

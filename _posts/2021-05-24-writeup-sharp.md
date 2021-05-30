@@ -15,7 +15,7 @@ tags: [htb-machines, htb, sharp,portable-kanban,kanban,reversing,exploit-remotin
 <strong><span style="color:#ff5555">Introduction</span></strong>
 
 
-Sharp machine released on 05 December 2020 on HacTheBox and created by [cube0x0](https://app.hackthebox.eu/users/9164)
+Sharp machine released on 05 December 2020 on HackTheBox and created by [cube0x0](https://app.hackthebox.eu/users/9164)
 
 
 <span style="color:#ff5555">The blog is for educational purposes only.</span>
